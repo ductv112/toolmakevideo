@@ -1,0 +1,135 @@
+========================================================
+  HƯỚNG DẪN SỬ DỤNG - TOOL SẢN XUẤT VIDEO TỰ ĐỘNG
+========================================================
+
+YÊU CẦU HỆ THỐNG:
+  - Python 3.10+
+  - FFmpeg đã cài và có trong PATH
+  - Cài thư viện: pip install -r requirements.txt
+
+========================================================
+QUY TRÌNH LÀM VIDEO MỚI
+========================================================
+
+BƯỚC 1: Tạo thư mục dự án
+  Tạo folder mới trong thư mục Video/, ví dụ:
+    Video/SonTinhThuyTinh/
+    Video/SuTichDuaHau/
+    Video/CongfuPanda/
+
+BƯỚC 2: Chuẩn bị nguyên liệu
+  Bỏ tất cả vào thư mục dự án:
+    Video/SonTinhThuyTinh/
+    ├── anh_01.jpg
+    ├── anh_02.jpg
+    ├── video_01.mp4
+    └── nhac_nen.mp3
+
+BƯỚC 3: Tạo file config.json
+  Copy file config.json mẫu (ở thư mục gốc tool) vào thư mục dự án.
+  Mở ra sửa nội dung cho phù hợp video mới.
+
+  Lưu ý:
+  - Đường dẫn file là tương đối trong cùng thư mục (vd: "anh_01.jpg", không cần "./assets/")
+  - project_name sẽ là tên file video đầu ra
+  - resolution: "1080x1920" (dọc 9:16) hoặc "1920x1080" (ngang 16:9)
+  - mode: "image_sequence" (ghép nhiều ảnh) hoặc "video_single" (1 video ngắn)
+  - Mỗi ảnh trong image_sequence cần có "duration" (số giây hiển thị)
+
+BƯỚC 4: Chạy tool
+  Mở terminal tại thư mục gốc tool (ToolMakeVideo/), chạy:
+
+    python main.py Video/SonTinhThuyTinh
+
+BƯỚC 5: Lấy kết quả
+  Video hoàn chỉnh nằm ngay trong thư mục dự án:
+    Video/SonTinhThuyTinh/son_tinh_thuy_tinh.mp4
+
+========================================================
+CÁC LỆNH
+========================================================
+
+1. CHẠY TOÀN BỘ (lần đầu hoặc làm lại từ đầu):
+   python main.py Video/SonTinhThuyTinh
+
+2. CHẠY LẠI 1 HOẶC VÀI SCENE BỊ LỖI:
+   python main.py Video/SonTinhThuyTinh --scene 3
+   python main.py Video/SonTinhThuyTinh --scene 3 5 7
+
+   -> Chỉ render lại scene chỉ định, các scene khác giữ nguyên.
+   -> Tự động ghép lại video final mới.
+
+3. CHỈ GHÉP LẠI VIDEO FINAL (không render lại scene nào):
+   python main.py Video/SonTinhThuyTinh --concat-only
+
+   -> Dùng khi đã có đủ temp_scene_*.mp4, chỉ muốn ghép lại + ốp nhạc.
+
+4. CHỈ ĐỊNH FONT CHỮ:
+   python main.py Video/SonTinhThuyTinh --font "C:/Windows/Fonts/arial.ttf"
+
+5. DỌN RÁC (giữ TTS để lần sau đỡ tải lại):
+   python main.py Video/SonTinhThuyTinh --clean
+
+   -> Xóa: temp_scene_*.mp4, concat_raw.mp4
+   -> Giữ: file gốc, TTS, video final
+
+6. DỌN SẠCH HOÀN TOÀN (xóa cả TTS):
+   python main.py Video/SonTinhThuyTinh --clean-all
+
+   -> Xóa: temp_scene_*.mp4, concat_raw.mp4, tts_scene*.mp3
+   -> Giữ: file gốc (ảnh, video, nhạc, config.json) + video final
+
+========================================================
+LƯU Ý QUAN TRỌNG
+========================================================
+
+- File TTS (tts_scene*.mp3) luôn được giữ lại giữa các lần chạy.
+  Nếu đã có TTS rồi thì tool sẽ SKIP, không tải lại -> tiết kiệm thời gian.
+  Muốn tải lại TTS: xóa file tts tương ứng rồi chạy lại.
+
+- Khi chạy lại toàn bộ (không có --scene), tool sẽ render lại TẤT CẢ scene.
+  Nếu chỉ lỗi 1-2 scene, nên dùng --scene để tiết kiệm thời gian.
+
+- Thời lượng mỗi scene lấy theo thời lượng HÌNH ẢNH, không phải TTS.
+  Nếu TTS dài hơn hình -> TTS bị cắt cụt.
+  Nếu TTS ngắn hơn hình -> hình tiếp tục chạy trong im lặng.
+
+========================================================
+CẤU TRÚC FILE CONFIG.JSON MẪU
+========================================================
+
+{
+  "project_name": "son_tinh_thuy_tinh",
+  "resolution": "1080x1920",
+  "fps": 30,
+  "audio_settings": {
+    "bgm_file": "nhac_nen.mp3",
+    "bgm_volume": 0.15,
+    "duck_bgm": true
+  },
+  "scenes": [
+    {
+      "scene_id": 1,
+      "mode": "image_sequence",
+      "visuals": [
+        {"file": "anh_01.jpg", "duration": 2.5},
+        {"file": "anh_02.jpg", "duration": 3.0}
+      ],
+      "text": "Nội dung giọng đọc và phụ đề...",
+      "tts_voice": "vi-VN-HoaiMyNeural"
+    },
+    {
+      "scene_id": 2,
+      "mode": "video_single",
+      "visuals": [
+        {"file": "video_01.mp4"}
+      ],
+      "text": "Nội dung giọng đọc...",
+      "tts_voice": "vi-VN-NamMinhNeural"
+    }
+  ]
+}
+
+GIỌNG ĐỌC TIẾNG VIỆT (edge-tts):
+  - vi-VN-HoaiMyNeural  (nữ)
+  - vi-VN-NamMinhNeural  (nam)

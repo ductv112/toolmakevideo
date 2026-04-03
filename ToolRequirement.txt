@@ -1,0 +1,79 @@
+Role: Bạn là một Senior Python Developer và là một Chuyên gia Kiến trúc Hệ thống (System Architect) chuyên về tự động hóa FFmpeg.
+
+PHẦN 1: BỐI CẢNH, MỤC TIÊU VÀ QUY TRÌNH VẬN HÀNH DỰ ÁN
+Chào Claude, tôi đang cần xây dựng một Tool CLI bằng Python để tự động hóa dây chuyền sản xuất video YouTube. Để bạn có thể thiết kế kiến trúc code tốt nhất, hãy đọc kỹ cách tôi làm việc và mục đích của tool này:
+
+1. Mục đích cốt lõi:
+Tôi thường xuyên làm các video YouTube dạng kể chuyện, dùng nguyên liệu là hình ảnh tĩnh hoặc video ngắn do AI tạo ra. Thay vì mệt mỏi chỉnh sửa thủ công bằng file .bat hay phần mềm, tôi muốn tự động hóa 100% khâu lắp ráp. Tôi chỉ cần cung cấp thư mục nguyên liệu và 1 file kịch bản config.json, tool sẽ tự động sinh file TTS, chèn text, ghép nhạc và xuất ra file MP4 hoàn chỉnh.
+
+2. Các trường hợp sử dụng (Use Cases) cốt lõi:
+Tool phải linh hoạt xử lý được 2 trường hợp cấu hình (dù là làm video dọc 9:16 hay ngang 16:9):
+- Trường hợp A (Chế độ nối Ảnh): Khung hình xuất ra là do tôi chỉ định cứng. Nguyên liệu ảnh đầu vào KHÔNG phân biệt ngang, dọc hay vuông, tool cứ việc nhét vào giữa khung hình xuất ra, phần thừa thì bù viền đen (pad).
+Lưu ý RẤT quan trọng: Tốc độ đọc của 1 câu thoại (TTS) thường mất khoảng 8-10s, nhưng tôi muốn hình ảnh thay đổi liên tục 2-3s một lần. Do đó, tool phải hiểu khái niệm "1 Scene (Phân cảnh)" ở đây là: Gom một mảng 4-5 ảnh (mỗi ảnh hiển thị theo số giây chỉ định) nối lại thành một khối video nền câm -> Sau đó mới ốp 1 đoạn Text và 1 file TTS vào CẢ KHỐI video câm đó.
+- Trường hợp B (Chế độ nối Video ngắn): 1 Video ngắn = 1 đoạn Text = 1 file TTS. Cứ ốp thẳng vào nhau thành 1 Scene, thời lượng lấy theo thời lượng của video gốc.
+
+3. Khâu Hậu kỳ và Nhạc nền (BGM):
+Sau khi tạo ra các Scene hoàn chỉnh ở Bước 2, dùng Concat Demuxer nối tất cả lại thành 1 video dài. Ốp nhạc nền (BGM) xuyên suốt từ đầu đến cuối. Nếu video dài hơn nhạc nền, tự động lặp (loop) hoặc nối tuần tự.
+Tùy chọn Ducking: Trong config.json sẽ có tham số duck_bgm (true/false). Nếu true, tool tự động dìm âm lượng nhạc nền để tôn giọng đọc. Nếu false, giữ nguyên âm lượng nhạc nền.
+
+Tóm lại về Tư duy kiến trúc: Bắt buộc theo hướng "Chia để trị" (Component-based). KHÔNG tính toán timestamp gộp một cục từ đầu đến cuối vì FFmpeg rất dễ lỗi. Hãy xử lý gọn gàng từng Scene một (Hình + Tiếng + Chữ) tạo thành các file temp_scene_x.mp4, rồi mới dùng Concat Demuxer nối lại ở bước cuối.
+
+
+PHẦN 2: ĐẶC TẢ KỸ THUẬT VÀ LUẬT THÉP (BẮT BUỘC TUÂN THỦ)
+
+Hệ thống bắt buộc tuân thủ tuyệt đối các luật sau khi gọi lệnh ffmpeg-python hoặc subprocess:
+
+Luật 1: Ép cứng khung hình (Force Resolution)
+Tool không tự đoán đầu vào. Khung hình đầu ra (ví dụ 1080x1920) được chỉ định trong JSON. Mọi hình ảnh/video đầu vào đều phải dùng bộ lọc pad hoặc scale để nhét vừa khung hình đó.
+
+Luật 2: Thời lượng Hình ảnh là Hệ Quy Chiếu Tuyệt Đối
+- Độ dài của file temp_scene_x.mp4 phải bằng CHÍNH XÁC độ dài của phần Hình ảnh/Video gốc trong Scene đó.
+- Nếu file TTS ngắn hơn Hình ảnh -> Hình ảnh tiếp tục chạy hết thời gian cấu hình trong im lặng.
+- Nếu file TTS dài hơn Hình ảnh -> Bắt buộc dùng lệnh FFmpeg (như cờ -t bằng đúng thời lượng hình ảnh) để CẮT CỤT audio TTS. Không được để audio thừa làm hỏng luồng thời gian chung của video.
+
+Luật 3: Tự động tải TTS bằng thư viện edge-tts (Không tốn phí)
+Khi đọc JSON, tool tự động gọi thư viện python edge-tts để tải file .mp3 lưu vào thư mục temp. Mặc định dùng giọng được truyền vào từ JSON (vd: vi-VN-HoaiMyNeural).
+
+Luật 4: Render Text
+Dùng bộ lọc drawtext của FFmpeg. Text phụ đề (text) luôn ở dưới cùng (VD: y=h-150). Text tiêu đề (title) luôn ở trên cùng (VD: y=50). Style cố định: Chữ trắng, viền vàng 3px.
+
+
+PHẦN 3: CẤU TRÚC FILE CONFIG.JSON CHUẨN
+
+Tool phải parse được file cấu hình mẫu dưới đây:
+
+{
+  "project_name": "dai_chien_ngan_ha",
+  "resolution": "1080x1920",
+  "fps": 30,
+  "audio_settings": {
+    "bgm_file": "./assets/epic_metal.mp3",
+    "duck_bgm": true
+  },
+  "scenes": [
+    {
+      "scene_id": 1,
+      "mode": "image_sequence",
+      "visuals": [
+        {"file": "./assets/anh_1.jpg", "duration": 2.5},
+        {"file": "./assets/anh_2.jpg", "duration": 3.0}
+      ],
+      "text": "Trong kỷ nguyên vũ trụ, những bí mật đen tối dần hé lộ...",
+      "tts_voice": "vi-VN-HoaiMyNeural"
+    },
+    {
+      "scene_id": 2,
+      "mode": "video_single",
+      "visuals": [
+        {"file": "./assets/video_1.mp4"}
+      ],
+      "text": "Cuộc chiến khốc liệt chính thức bắt đầu.",
+      "tts_voice": "vi-VN-NamMinhNeural"
+    }
+  ]
+}
+
+
+YÊU CẦU OUTPUT CHO BẠN:
+Hãy viết code Python thật clean, module hóa rõ ràng (Ví dụ: core_ffmpeg.py, tts_generator.py, main.py). 
+Trước tiên, hãy phác thảo cấu trúc thư mục của dự án và cung cấp cho tôi code của các hàm cốt lõi xử lý việc Render 1 Scene (kết hợp Hình + Tiếng edge-tts + Chữ theo đúng Luật 2) và hàm Concat video. Viết comment giải thích rõ logic các tham số FFmpeg bạn sử dụng.

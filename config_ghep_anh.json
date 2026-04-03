@@ -1,0 +1,90 @@
+{
+  "project_name": "ten_video",
+  "resolution": "1080x1920",
+  "fps": 30,
+  "audio_settings": {
+    "bgm_file": "nhacnen.mp3",
+    "bgm_volume": 0.15,
+    "duck_bgm": true
+  },
+  "scenes": [
+    {
+      "scene_id": 1,
+      "mode": "image_sequence",
+      "visuals": [
+        {"file": "1.png", "duration": 2},
+        {"file": "2.png", "duration": 2},
+        {"file": "3.png", "duration": 2},
+        {"file": "4.png", "duration": 2},
+        {"file": "5.png", "duration": 2}
+      ],
+      "text": "Nội dung giọng đọc scene 1...",
+      "tts_voice": "vi-VN-HoaiMyNeural"
+    },
+    {
+      "scene_id": 2,
+      "mode": "image_sequence",
+      "visuals": [
+        {"file": "6.png", "duration": 2},
+        {"file": "7.png", "duration": 2},
+        {"file": "8.png", "duration": 2},
+        {"file": "9.png", "duration": 2},
+        {"file": "10.png", "duration": 2}
+      ],
+      "text": "Nội dung giọng đọc scene 2...",
+      "tts_voice": "vi-VN-HoaiMyNeural"
+    },
+    {
+      "scene_id": 3,
+      "mode": "image_sequence",
+      "visuals": [
+        {"file": "11.png", "duration": 2},
+        {"file": "12.png", "duration": 2},
+        {"file": "13.png", "duration": 2},
+        {"file": "14.png", "duration": 2},
+        {"file": "15.png", "duration": 2}
+      ],
+      "text": "Nội dung giọng đọc scene 3...",
+      "tts_voice": "vi-VN-HoaiMyNeural"
+    },
+    {
+      "scene_id": 4,
+      "mode": "image_sequence",
+      "visuals": [
+        {"file": "16.png", "duration": 2},
+        {"file": "17.png", "duration": 2},
+        {"file": "18.png", "duration": 2},
+        {"file": "19.png", "duration": 2},
+        {"file": "20.png", "duration": 2}
+      ],
+      "text": "Nội dung giọng đọc scene 4...",
+      "tts_voice": "vi-VN-HoaiMyNeural"
+    },
+    {
+      "scene_id": 5,
+      "mode": "image_sequence",
+      "visuals": [
+        {"file": "21.png", "duration": 2},
+        {"file": "22.png", "duration": 2},
+        {"file": "23.png", "duration": 2},
+        {"file": "24.png", "duration": 2},
+        {"file": "25.png", "duration": 2}
+      ],
+      "text": "Nội dung giọng đọc scene 5...",
+      "tts_voice": "vi-VN-HoaiMyNeural"
+    },
+    {
+      "scene_id": 6,
+      "mode": "image_sequence",
+      "visuals": [
+        {"file": "26.png", "duration": 2},
+        {"file": "27.png", "duration": 2},
+        {"file": "28.png", "duration": 2},
+        {"file": "29.png", "duration": 2},
+        {"file": "30.png", "duration": 2}
+      ],
+      "text": "Nội dung giọng đọc scene 6...",
+      "tts_voice": "vi-VN-HoaiMyNeural"
+    }
+  ]
+}

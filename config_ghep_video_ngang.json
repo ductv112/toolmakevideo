@@ -1,0 +1,42 @@
+{
+  "project_name": "ten_video",
+  "resolution": "1920x1080",
+  "fps": 30,
+  "audio_settings": {
+    "bgm_file": "nhacnen.mp3",
+    "bgm_volume": 0.15,
+    "duck_bgm": true
+  },
+  "scenes": [
+    {"scene_id": 1, "mode": "video_single", "visuals": [{"file": "clip1.mp4"}], "text": "Nội dung giọng đọc clip 1...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 2, "mode": "video_single", "visuals": [{"file": "clip2.mp4"}], "text": "Nội dung giọng đọc clip 2...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 3, "mode": "video_single", "visuals": [{"file": "clip3.mp4"}], "text": "Nội dung giọng đọc clip 3...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 4, "mode": "video_single", "visuals": [{"file": "clip4.mp4"}], "text": "Nội dung giọng đọc clip 4...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 5, "mode": "video_single", "visuals": [{"file": "clip5.mp4"}], "text": "Nội dung giọng đọc clip 5...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 6, "mode": "video_single", "visuals": [{"file": "clip6.mp4"}], "text": "Nội dung giọng đọc clip 6...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 7, "mode": "video_single", "visuals": [{"file": "clip7.mp4"}], "text": "Nội dung giọng đọc clip 7...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 8, "mode": "video_single", "visuals": [{"file": "clip8.mp4"}], "text": "Nội dung giọng đọc clip 8...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 9, "mode": "video_single", "visuals": [{"file": "clip9.mp4"}], "text": "Nội dung giọng đọc clip 9...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 10, "mode": "video_single", "visuals": [{"file": "clip10.mp4"}], "text": "Nội dung giọng đọc clip 10...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 11, "mode": "video_single", "visuals": [{"file": "clip11.mp4"}], "text": "Nội dung giọng đọc clip 11...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 12, "mode": "video_single", "visuals": [{"file": "clip12.mp4"}], "text": "Nội dung giọng đọc clip 12...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 13, "mode": "video_single", "visuals": [{"file": "clip13.mp4"}], "text": "Nội dung giọng đọc clip 13...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 14, "mode": "video_single", "visuals": [{"file": "clip14.mp4"}], "text": "Nội dung giọng đọc clip 14...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 15, "mode": "video_single", "visuals": [{"file": "clip15.mp4"}], "text": "Nội dung giọng đọc clip 15...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 16, "mode": "video_single", "visuals": [{"file": "clip16.mp4"}], "text": "Nội dung giọng đọc clip 16...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 17, "mode": "video_single", "visuals": [{"file": "clip17.mp4"}], "text": "Nội dung giọng đọc clip 17...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 18, "mode": "video_single", "visuals": [{"file": "clip18.mp4"}], "text": "Nội dung giọng đọc clip 18...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 19, "mode": "video_single", "visuals": [{"file": "clip19.mp4"}], "text": "Nội dung giọng đọc clip 19...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 20, "mode": "video_single", "visuals": [{"file": "clip20.mp4"}], "text": "Nội dung giọng đọc clip 20...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 21, "mode": "video_single", "visuals": [{"file": "clip21.mp4"}], "text": "Nội dung giọng đọc clip 21...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 22, "mode": "video_single", "visuals": [{"file": "clip22.mp4"}], "text": "Nội dung giọng đọc clip 22...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 23, "mode": "video_single", "visuals": [{"file": "clip23.mp4"}], "text": "Nội dung giọng đọc clip 23...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 24, "mode": "video_single", "visuals": [{"file": "clip24.mp4"}], "text": "Nội dung giọng đọc clip 24...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 25, "mode": "video_single", "visuals": [{"file": "clip25.mp4"}], "text": "Nội dung giọng đọc clip 25...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 26, "mode": "video_single", "visuals": [{"file": "clip26.mp4"}], "text": "Nội dung giọng đọc clip 26...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 27, "mode": "video_single", "visuals": [{"file": "clip27.mp4"}], "text": "Nội dung giọng đọc clip 27...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 28, "mode": "video_single", "visuals": [{"file": "clip28.mp4"}], "text": "Nội dung giọng đọc clip 28...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 29, "mode": "video_single", "visuals": [{"file": "clip29.mp4"}], "text": "Nội dung giọng đọc clip 29...", "tts_voice": "vi-VN-HoaiMyNeural"},
+    {"scene_id": 30, "mode": "video_single", "visuals": [{"file": "clip30.mp4"}], "text": "Nội dung giọng đọc clip 30...", "tts_voice": "vi-VN-HoaiMyNeural"}
+  ]
+}
