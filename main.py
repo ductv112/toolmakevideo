@@ -31,7 +31,8 @@ from tts_generator import generate_tts_for_scene
 from core_ffmpeg import (
     render_image_sequence_scene,
     render_video_single_scene,
-    concat_all_scenes
+    concat_all_scenes,
+    apply_watermark
 )
 from audio_mixer import apply_bgm
 from utils import parse_resolution, ensure_dir
@@ -234,6 +235,28 @@ def main():
     # Xóa file concat tạm
     if os.path.exists(concat_output):
         os.remove(concat_output)
+
+    # ===== BƯỚC 4: Chèn Watermark/Logo (nếu có) =====
+    watermark_cfg = config.get("watermark", {})
+    wm_file = watermark_cfg.get("file", "") if isinstance(watermark_cfg, dict) else ""
+    if wm_file:
+        wm_path = os.path.join(project_dir, wm_file) if not os.path.isabs(wm_file) else wm_file
+        if os.path.exists(wm_path):
+            wm_margin = watermark_cfg.get("margin", 10)
+            wm_height = watermark_cfg.get("height", 0)
+            print(f"\n--- CHÈN WATERMARK ---")
+            # Render watermark vào file tạm, rồi thay thế file final
+            wm_temp = os.path.join(project_dir, "temp_watermark.mp4")
+            apply_watermark(
+                video_path=final_output,
+                watermark_path=wm_path,
+                output_path=wm_temp,
+                margin=wm_margin,
+                height=wm_height
+            )
+            os.replace(wm_temp, final_output)
+        else:
+            print(f"\n[WARN] Watermark file không tồn tại: {wm_path}, bỏ qua")
 
     elapsed = time.time() - start_time
     print(f"\n{'='*60}")

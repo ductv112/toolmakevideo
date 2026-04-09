@@ -8,6 +8,10 @@
     "voice_volume": 1.0,
     "duck_bgm": true
   },
+  "watermark": {
+    "file": "DucTV.jpg",
+    "margin": 10
+  },
   "scenes": [
     {"scene_id": 1, "mode": "video_single", "visuals": [{"file": "clip1.mp4"}], "text": "Subtitle clip 1", "tts": "Noi dung giong doc clip 1...", "tts_voice": "vi-VN-HoaiMyNeural"},
     {"scene_id": 2, "mode": "video_single", "visuals": [{"file": "clip2.mp4"}], "text": "Subtitle clip 2", "tts": "Noi dung giong doc clip 2...", "tts_voice": "vi-VN-HoaiMyNeural"},

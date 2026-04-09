@@ -14,7 +14,7 @@ import os
 import platform
 from utils import (
     run_ffmpeg, parse_resolution, get_media_duration,
-    escape_text_for_ffmpeg, validate_file_in_project
+    escape_text_for_ffmpeg, validate_file_in_project, has_audio_stream
 )
 
 
@@ -142,23 +142,24 @@ def render_video_single_scene(
             f"Scene {scene_id}: không tìm thấy video: {video_path}"
         )
 
-    # Bước 1: Scale + pad video gốc, bỏ audio gốc
+    # Bước 1: Scale + pad video gốc, GIỮ audio gốc nếu có
     scaled_path = os.path.join(temp_dir, f"scene{scene_id}_scaled.mp4")
     filter_str = (
         f"scale={target_w}:{target_h}:force_original_aspect_ratio=decrease,"
         f"pad={target_w}:{target_h}:(ow-iw)/2:(oh-ih)/2:color=black,"
         f"setsar=1,fps={fps}"
     )
+    # Giữ audio gốc của video (sound effects, nhạc trong clip)
     run_ffmpeg([
         "-i", video_path,
         "-vf", filter_str,
         "-c:v", "libx264", "-preset", "fast",
         "-pix_fmt", "yuv420p",
-        "-an",
+        "-c:a", "copy",
         scaled_path
     ], f"Scene {scene_id} - scale video gốc")
 
-    # Bước 2: Ốp TTS + drawtext
+    # Bước 2: Ốp TTS + drawtext, mix audio gốc + TTS
     _overlay_audio_and_text(
         video_path=scaled_path,
         tts_path=tts_path,
@@ -167,7 +168,8 @@ def render_video_single_scene(
         scene_id=scene_id,
         target_w=target_w,
         target_h=target_h,
-        font_path=font_path
+        font_path=font_path,
+        keep_original_audio=True
     )
 
     _safe_remove(scaled_path)
@@ -185,15 +187,19 @@ def _overlay_audio_and_text(
     scene_id: int,
     target_w: int,
     target_h: int,
-    font_path: str = ""
+    font_path: str = "",
+    keep_original_audio: bool = False
 ):
-    """Ốp file TTS audio + drawtext lên video câm.
+    """Ốp file TTS audio + drawtext lên video.
 
     Luật 2 được thực thi ở đây:
     - Thời lượng video nền là hệ quy chiếu tuyệt đối.
     - TTS ngắn hơn -> video chạy tiếp trong im lặng.
     - TTS dài hơn -> bị cắt cụt bằng -t (thời lượng video nền).
-    - -shortest: dừng encode khi stream ngắn nhất kết thúc (video nền).
+
+    Args:
+        keep_original_audio: Nếu True, mix audio gốc của video + TTS (dùng cho video_single).
+                             Nếu False, chỉ dùng TTS audio (dùng cho image_sequence - video câm).
     """
     # Validate input files
     if not os.path.exists(video_path):
@@ -222,7 +228,7 @@ def _overlay_audio_and_text(
         else:
             font_opt = "font='DejaVu Sans'"
 
-    drawtext_filter = (
+    drawtext_str = (
         f"drawtext={font_opt}:"
         f"text='{escaped_text}':"
         f"fontsize={fontsize}:"
@@ -233,22 +239,43 @@ def _overlay_audio_and_text(
         f"line_spacing=8"
     )
 
-    # Ốp audio TTS lên video, áp dụng Luật 2:
-    # -t video_duration: cắt cụt audio nếu dài hơn video nền
-    # -shortest: dừng khi stream ngắn nhất hết (safety net)
-    run_ffmpeg([
-        "-i", video_path,                          # Input 0: video câm
-        "-i", tts_path,                             # Input 1: TTS audio
-        "-vf", drawtext_filter,                     # Bộ lọc drawtext
-        "-t", str(video_duration),                  # Luật 2: ép thời lượng = video nền
-        "-c:v", "libx264", "-preset", "fast",
-        "-c:a", "aac", "-b:a", "192k",
-        "-pix_fmt", "yuv420p",
-        "-shortest",                                # Safety: dừng khi hết stream ngắn nhất
-        "-map", "0:v:0",                            # Lấy video từ input 0
-        "-map", "1:a:0",                            # Lấy audio từ input 1
-        output_path
-    ], f"Scene {scene_id} - ốp TTS + text")
+    # Kiểm tra video có audio gốc không (chỉ khi keep_original_audio=True)
+    video_has_audio = keep_original_audio and has_audio_stream(video_path)
+
+    if video_has_audio:
+        # Video có audio gốc -> dùng filter_complex để mix audio gốc + TTS
+        # [0:v] drawtext -> [outv]
+        # [0:a] audio gốc + [1:a] TTS -> amix -> [outa]
+        filter_complex = (
+            f"[0:v]{drawtext_str}[outv];"
+            f"[0:a][1:a]amix=inputs=2:duration=first:dropout_transition=0[outa]"
+        )
+        run_ffmpeg([
+            "-i", video_path,                          # Input 0: video có audio gốc
+            "-i", tts_path,                             # Input 1: TTS audio
+            "-filter_complex", filter_complex,
+            "-map", "[outv]",                           # Video đã có drawtext
+            "-map", "[outa]",                           # Audio đã mix
+            "-t", str(video_duration),                  # Luật 2: ép thời lượng = video nền
+            "-c:v", "libx264", "-preset", "fast",
+            "-c:a", "aac", "-b:a", "192k",
+            "-pix_fmt", "yuv420p",
+            output_path
+        ], f"Scene {scene_id} - ốp TTS + text + giữ audio gốc")
+    else:
+        # Video câm (image_sequence) -> chỉ dùng TTS audio
+        run_ffmpeg([
+            "-i", video_path,                          # Input 0: video câm
+            "-i", tts_path,                             # Input 1: TTS audio
+            "-vf", drawtext_str,                        # Bộ lọc drawtext
+            "-t", str(video_duration),                  # Luật 2: ép thời lượng = video nền
+            "-c:v", "libx264", "-preset", "fast",
+            "-c:a", "aac", "-b:a", "192k",
+            "-pix_fmt", "yuv420p",
+            "-map", "0:v:0",                            # Lấy video từ input 0
+            "-map", "1:a:0",                            # Lấy audio từ input 1
+            output_path
+        ], f"Scene {scene_id} - ốp TTS + text")
 
 
 # ===========================================================================
@@ -287,6 +314,48 @@ def concat_all_scenes(scene_paths: list[str], output_path: str, temp_dir: str):
 # ===========================================================================
 # 5. HÀM NỘI BỘ
 # ===========================================================================
+
+def apply_watermark(
+    video_path: str,
+    watermark_path: str,
+    output_path: str,
+    margin: int = 10,
+    height: int = 0
+):
+    """Chèn ảnh watermark/logo vào góc dưới bên phải video.
+
+    Args:
+        video_path: Video đầu vào.
+        watermark_path: Ảnh logo (png/jpg).
+        margin: Khoảng cách từ mép phải và mép dưới (px).
+        height: Chiều cao logo (px). Nếu 0 thì giữ nguyên kích thước gốc.
+    """
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"Video không tồn tại: {video_path}")
+    if not os.path.exists(watermark_path):
+        raise FileNotFoundError(f"Watermark không tồn tại: {watermark_path}")
+
+    # Nếu có chỉ định height -> scale logo giữ tỷ lệ
+    if height > 0:
+        filter_complex = (
+            f"[1:v]scale=-1:{height}[wm];"
+            f"[0:v][wm]overlay=W-w-{margin}:H-h-{margin}"
+        )
+    else:
+        filter_complex = f"[0:v][1:v]overlay=W-w-{margin}:H-h-{margin}"
+
+    run_ffmpeg([
+        "-i", video_path,
+        "-i", watermark_path,
+        "-filter_complex", filter_complex,
+        "-c:a", "copy",
+        "-c:v", "libx264", "-preset", "fast",
+        "-pix_fmt", "yuv420p",
+        output_path
+    ], "Chèn watermark/logo")
+
+    print(f"  [WATERMARK] OK -> {output_path}")
+
 
 def _concat_clips(clip_paths: list[str], output_path: str, temp_dir: str, prefix: str):
     """Nối các clip ngắn trong 1 scene (dùng cho image_sequence)."""

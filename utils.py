@@ -118,7 +118,7 @@ def run_ffmpeg(args: list[str], description: str = ""):
 def escape_text_for_ffmpeg(text: str) -> str:
     """Escape ký tự đặc biệt cho bộ lọc drawtext của FFmpeg.
 
-    FFmpeg drawtext cần escape các ký tự: \\ : ' [ ] ;
+    FFmpeg drawtext cần escape các ký tự: \\ : ' [ ] ; %
     Thứ tự escape quan trọng: backslash phải escape trước tiên.
     """
     # Escape backslash trước tiên (\ -> \\)
@@ -132,7 +132,23 @@ def escape_text_for_ffmpeg(text: str) -> str:
     text = text.replace("]", "\\]")
     # Escape dấu chấm phẩy
     text = text.replace(";", "\\;")
+    # Escape dấu phần trăm (% là ký tự đặc biệt trong drawtext, dùng cho text expansion)
+    text = text.replace("%", "%%")
     return text
+
+
+def has_audio_stream(file_path: str) -> bool:
+    """Kiểm tra file media có chứa audio stream hay không."""
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "error", "-select_streams", "a",
+             "-show_entries", "stream=codec_type", "-of", "csv=p=0",
+             file_path],
+            capture_output=True, text=True, timeout=FFPROBE_TIMEOUT
+        )
+        return "audio" in result.stdout
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return False
 
 
 def validate_file_in_project(file_path: str, base_dir: str) -> str:

@@ -66,6 +66,21 @@ def validate_config(config: dict, base_dir: str):
         if not isinstance(voice_vol, (int, float)) or not (0 < voice_vol <= 1):
             _error(f"voice_volume phải trong khoảng (0, 1], nhận được: {voice_vol}")
 
+    # --- Watermark (optional) ---
+    watermark = config.get("watermark", {})
+    if watermark and isinstance(watermark, dict):
+        wm_file = watermark.get("file", "")
+        if wm_file:
+            wm_path = os.path.join(base_dir, wm_file) if not os.path.isabs(wm_file) else wm_file
+            if not os.path.exists(wm_path):
+                _error(f"Không tìm thấy file watermark: {wm_path}")
+            wm_margin = watermark.get("margin", 10)
+            if not isinstance(wm_margin, (int, float)) or wm_margin < 0:
+                _error(f"watermark margin phải >= 0, nhận được: {wm_margin}")
+            wm_height = watermark.get("height", 0)
+            if not isinstance(wm_height, (int, float)) or wm_height < 0:
+                _error(f"watermark height phải >= 0, nhận được: {wm_height}")
+
     # --- Scenes ---
     scenes = config["scenes"]
     if not scenes:
