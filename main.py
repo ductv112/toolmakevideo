@@ -77,14 +77,8 @@ def main():
     )
     args = parser.parse_args()
 
-    # Xác định thư mục dự án (tuyệt đối)
-    tool_dir = os.path.dirname(os.path.abspath(__file__))
-    project_dir = os.path.abspath(os.path.join(tool_dir, args.project_dir))
-
-    # Validate project_dir không escape ra ngoài tool_dir
-    if not os.path.normpath(project_dir).startswith(os.path.normpath(tool_dir) + os.sep):
-        print(f"[ERROR] Đường dẫn dự án không hợp lệ (ngoài thư mục tool): {args.project_dir}")
-        return
+    # Xác định thư mục dự án (tuyệt đối, resolve từ thư mục hiện tại)
+    project_dir = os.path.abspath(args.project_dir)
 
     if not os.path.isdir(project_dir):
         print(f"[ERROR] Không tìm thấy thư mục dự án: {project_dir}")
@@ -164,7 +158,7 @@ def main():
             print(f"  [TTS] Đã có sẵn, skip tải lại: {tts_path}")
         else:
             generate_tts_for_scene(
-                text=scene["text"],
+                text=scene.get("tts", scene["text"]),
                 voice=scene["tts_voice"],
                 output_path=tts_path
             )

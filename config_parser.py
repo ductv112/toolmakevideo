@@ -105,7 +105,13 @@ def _validate_scene(scene: dict, base_dir: str):
     # Validate text không rỗng
     text = scene.get("text", "")
     if not text or not text.strip():
-        _error(f"Scene {scene_id}: text không được rỗng")
+        _error(f"Scene {scene_id}: text (phụ đề) không được rỗng")
+
+    # Validate tts (giọng đọc) - nếu có thì không được rỗng
+    if "tts" in scene:
+        tts_text = scene.get("tts", "")
+        if not tts_text or not tts_text.strip():
+            _error(f"Scene {scene_id}: tts (giọng đọc) không được rỗng nếu đã khai báo")
 
     visuals = scene["visuals"]
     if not visuals:

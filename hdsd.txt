@@ -23,20 +23,17 @@
 ========================================================
 
 BƯỚC 1: Tạo thư mục dự án
-  Tạo folder mới trong thư mục Video/ (nằm cạnh main.py):
+  Tạo folder dự án ở bất kỳ đâu, ví dụ:
 
-    ToolMakeVideo/
-    ├── main.py
-    ├── ...
-    └── Video/
-        ├── SonTinhThuyTinh/    <-- dự án 1
-        ├── SuTichDuaHau/       <-- dự án 2
-        └── CongfuPanda/        <-- dự án 3
+    D:\ClaudeProject\Video\
+    ├── SonTinhThuyTinh/    <-- dự án 1
+    ├── SuTichDuaHau/       <-- dự án 2
+    └── Planet404/          <-- dự án 3
 
 BƯỚC 2: Chuẩn bị nguyên liệu
   Bỏ TẤT CẢ ảnh, video, nhạc nền vào thư mục dự án:
 
-    Video/SonTinhThuyTinh/
+    D:\ClaudeProject\Video\SonTinhThuyTinh\
     ├── 1.png
     ├── 2.png
     ├── 3.png
@@ -55,9 +52,9 @@ BƯỚC 3: Tạo file config.json
   (Xem chi tiết cách cấu hình ở Mục 5 bên dưới)
 
 BƯỚC 4: Chạy tool
-  Mở terminal TẠI THƯ MỤC GỐC TOOL (chứa main.py), chạy:
+  Mở terminal, chạy lệnh với ĐƯỜNG DẪN TUYỆT ĐỐI đến thư mục dự án:
 
-    python main.py Video/SonTinhThuyTinh
+    python main.py D:\ClaudeProject\Video\SonTinhThuyTinh
 
   Ngồi chờ tool chạy. Quá trình gồm:
     1) Tải giọng đọc TTS cho từng scene (lần đầu)
@@ -68,9 +65,9 @@ BƯỚC 4: Chạy tool
 BƯỚC 5: Lấy kết quả
   Video hoàn chỉnh nằm ngay trong thư mục dự án:
 
-    Video/SonTinhThuyTinh/son_tinh_thuy_tinh.mp4
-                          ^^^^^^^^^^^^^^^^^^^^
-                          (tên lấy từ project_name trong config.json)
+    D:\ClaudeProject\Video\SonTinhThuyTinh\son_tinh_thuy_tinh.mp4
+                                           ^^^^^^^^^^^^^^^^^^^^
+                                           (tên lấy từ project_name trong config.json)
 
 
 3. CÁC LỆNH
@@ -78,15 +75,15 @@ BƯỚC 5: Lấy kết quả
 
   LỆNH                                             | MÔ TẢ
   --------------------------------------------------|------------------------------------
-  python main.py Video/XXX                          | Chạy toàn bộ (lần đầu)
-  python main.py Video/XXX --scene 3                | Render lại scene 3
-  python main.py Video/XXX --scene 3 5 7            | Render lại scene 3, 5, 7
-  python main.py Video/XXX -s 3 5                   | Viết tắt của --scene
-  python main.py Video/XXX --concat-only            | Chỉ ghép lại, không render
-  python main.py Video/XXX --font "đường/dẫn/font"  | Dùng font chữ tùy chọn
-  python main.py Video/XXX -f "đường/dẫn/font"      | Viết tắt của --font
-  python main.py Video/XXX --clean                  | Dọn file tạm, giữ TTS
-  python main.py Video/XXX --clean-all              | Dọn sạch, xóa cả TTS
+  python main.py D:\path\to\Video\XXX                          | Chạy toàn bộ (lần đầu)
+  python main.py D:\path\to\Video\XXX --scene 3                | Render lại scene 3
+  python main.py D:\path\to\Video\XXX --scene 3 5 7            | Render lại scene 3, 5, 7
+  python main.py D:\path\to\Video\XXX -s 3 5                   | Viết tắt của --scene
+  python main.py D:\path\to\Video\XXX --concat-only            | Chỉ ghép lại, không render
+  python main.py D:\path\to\Video\XXX --font "đường/dẫn/font"  | Dùng font chữ tùy chọn
+  python main.py D:\path\to\Video\XXX -f "đường/dẫn/font"      | Viết tắt của --font
+  python main.py D:\path\to\Video\XXX --clean                  | Dọn file tạm, giữ TTS
+  python main.py D:\path\to\Video\XXX --clean-all              | Dọn sạch, xóa cả TTS
 
 Chi tiết:
 
@@ -121,7 +118,7 @@ Chi tiết:
      - File TTS (tts_scene*.mp3) luôn được giữ lại giữa các lần chạy.
        Nếu đã có TTS rồi, tool sẽ SKIP không tải lại -> tiết kiệm thời gian.
      - Muốn tải lại TTS (ví dụ sửa text): XÓA file tts tương ứng rồi chạy lại.
-       Ví dụ: xóa tts_scene3.mp3 rồi chạy: python main.py Video/XXX --scene 3
+       Ví dụ: xóa tts_scene3.mp3 rồi chạy: python main.py D:\path\to\Video\XXX --scene 3
      - Giới hạn: mỗi đoạn text tối đa 5000 ký tự. Nếu dài hơn sẽ bị cắt tự động.
 
   b) VỀ THỜI LƯỢNG:
@@ -165,7 +162,8 @@ Chi tiết:
           {"file": "2.png", "duration": 3.0},
           {"file": "3.png", "duration": 2.0}
         ],
-        "text": "Ngày xửa ngày xưa, Vua Hùng có một người con gái...",
+        "text": "The King's beautiful daughter",
+        "tts": "Ngày xửa ngày xưa, Vua Hùng có một người con gái xinh đẹp tuyệt trần.",
         "tts_voice": "vi-VN-HoaiMyNeural"
       },
       {
@@ -174,7 +172,8 @@ Chi tiết:
         "visuals": [
           {"file": "clip_chien_dau.mp4"}
         ],
-        "text": "Sơn Tinh và Thủy Tinh giao chiến dữ dội...",
+        "text": "The epic battle begins",
+        "tts": "Sơn Tinh và Thủy Tinh giao chiến dữ dội.",
         "tts_voice": "vi-VN-NamMinhNeural"
       }
     ]
@@ -236,8 +235,15 @@ Chi tiết:
                 |   ]
                 |   -> Không cần duration (lấy theo thời lượng video gốc)
   -------------------------------------------------------
-  text          | Nội dung giọng đọc + phụ đề.
-                | Tối đa 5000 ký tự. KHÔNG được để rỗng.
+  text          | Phụ đề hiển thị trên màn hình.
+                | KHÔNG được để rỗng.
+                | Nên viết ngắn gọn cho vừa màn hình.
+  -------------------------------------------------------
+  tts           | Nội dung giọng đọc (TTS sẽ đọc đoạn này).
+                | TÙY CHỌN. Tối đa 5000 ký tự.
+                | Nếu không có trường này, giọng đọc sẽ dùng "text".
+                | Dùng khi muốn phụ đề và giọng đọc KHÁC NHAU.
+                | VD: text = tiếng Anh, tts = tiếng Việt.
   -------------------------------------------------------
   tts_voice     | Tên giọng đọc (xem danh sách bên dưới)
   -------------------------------------------------------
@@ -279,10 +285,10 @@ Chi tiết:
     - Scene 3: 4 ảnh kết thúc
 
   BƯỚC 1: Tạo thư mục
-    mkdir Video/SonTinhThuyTinh
+    mkdir D:\ClaudeProject\Video\SonTinhThuyTinh
 
   BƯỚC 2: Bỏ nguyên liệu vào
-    Video/SonTinhThuyTinh/
+    D:\ClaudeProject\Video\SonTinhThuyTinh\
     ├── 1.png ... 5.png         (ảnh scene 1)
     ├── clip_chien.mp4          (video scene 2)
     ├── 6.png ... 9.png         (ảnh scene 3)
@@ -309,14 +315,16 @@ Chi tiết:
             {"file": "4.png", "duration": 2},
             {"file": "5.png", "duration": 2}
           ],
-          "text": "Ngày xưa, Vua Hùng thứ 18 có một người con gái tên là Mỵ Nương, nhan sắc tuyệt trần.",
+          "text": "The King's daughter, My Nuong",
+          "tts": "Ngày xưa, Vua Hùng thứ 18 có một người con gái tên là Mỵ Nương, nhan sắc tuyệt trần.",
           "tts_voice": "vi-VN-HoaiMyNeural"
         },
         {
           "scene_id": 2,
           "mode": "video_single",
           "visuals": [{"file": "clip_chien.mp4"}],
-          "text": "Sơn Tinh hô mưa gọi gió, dâng núi cao chặn đứng dòng nước lũ của Thủy Tinh.",
+          "text": "Son Tinh vs Thuy Tinh",
+          "tts": "Sơn Tinh hô mưa gọi gió, dâng núi cao chặn đứng dòng nước lũ của Thủy Tinh.",
           "tts_voice": "vi-VN-NamMinhNeural"
         },
         {
@@ -328,23 +336,24 @@ Chi tiết:
             {"file": "8.png", "duration": 2.5},
             {"file": "9.png", "duration": 2.5}
           ],
-          "text": "Cuối cùng Thủy Tinh thua trận, rút quân về biển. Từ đó năm nào cũng dâng nước đánh Sơn Tinh.",
+          "text": "Thuy Tinh was defeated",
+          "tts": "Cuối cùng Thủy Tinh thua trận, rút quân về biển. Từ đó năm nào cũng dâng nước đánh Sơn Tinh.",
           "tts_voice": "vi-VN-HoaiMyNeural"
         }
       ]
     }
 
   BƯỚC 4: Chạy
-    python main.py Video/SonTinhThuyTinh
+    python main.py D:\ClaudeProject\Video\SonTinhThuyTinh
 
   BƯỚC 5: Lấy kết quả
-    Video/SonTinhThuyTinh/son_tinh_thuy_tinh.mp4
+    D:\ClaudeProject\Video\SonTinhThuyTinh\son_tinh_thuy_tinh.mp4
 
   Nếu scene 2 bị lỗi, chạy lại riêng scene 2:
-    python main.py Video/SonTinhThuyTinh --scene 2
+    python main.py D:\ClaudeProject\Video\SonTinhThuyTinh --scene 2
 
   Xong xuôi, dọn rác:
-    python main.py Video/SonTinhThuyTinh --clean
+    python main.py D:\ClaudeProject\Video\SonTinhThuyTinh --clean
 
 
 8. XỬ LÝ LỖI THƯỜNG GẶP

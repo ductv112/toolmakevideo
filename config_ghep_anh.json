@@ -19,7 +19,8 @@
         {"file": "4.png", "duration": 2},
         {"file": "5.png", "duration": 2}
       ],
-      "text": "Noi dung giong doc scene 1. Thay bang noi dung thuc te cua ban.",
+      "text": "Subtitle scene 1 (hien thi tren man hinh)",
+      "tts": "Noi dung giong doc scene 1 (doc bang giong TTS)",
       "tts_voice": "vi-VN-HoaiMyNeural"
     },
     {
@@ -32,7 +33,8 @@
         {"file": "9.png", "duration": 2},
         {"file": "10.png", "duration": 2}
       ],
-      "text": "Noi dung giong doc scene 2. Thay bang noi dung thuc te cua ban.",
+      "text": "Subtitle scene 2 (hien thi tren man hinh)",
+      "tts": "Noi dung giong doc scene 2 (doc bang giong TTS)",
       "tts_voice": "vi-VN-HoaiMyNeural"
     },
     {
@@ -45,7 +47,8 @@
         {"file": "14.png", "duration": 2},
         {"file": "15.png", "duration": 2}
       ],
-      "text": "Noi dung giong doc scene 3. Thay bang noi dung thuc te cua ban.",
+      "text": "Subtitle scene 3 (hien thi tren man hinh)",
+      "tts": "Noi dung giong doc scene 3 (doc bang giong TTS)",
       "tts_voice": "vi-VN-HoaiMyNeural"
     }
   ]
