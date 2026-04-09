@@ -22,7 +22,6 @@ Usage:
 """
 
 import argparse
-import glob
 import os
 import shutil
 import time
@@ -82,9 +81,19 @@ def main():
     tool_dir = os.path.dirname(os.path.abspath(__file__))
     project_dir = os.path.abspath(os.path.join(tool_dir, args.project_dir))
 
+    # Validate project_dir không escape ra ngoài tool_dir
+    if not os.path.normpath(project_dir).startswith(os.path.normpath(tool_dir) + os.sep):
+        print(f"[ERROR] Đường dẫn dự án không hợp lệ (ngoài thư mục tool): {args.project_dir}")
+        return
+
     if not os.path.isdir(project_dir):
         print(f"[ERROR] Không tìm thấy thư mục dự án: {project_dir}")
         return
+
+    # Validate font path sớm
+    if args.font and not os.path.exists(args.font):
+        print(f"[WARN] Font file không tồn tại: {args.font}, sẽ dùng font mặc định")
+        args.font = ""
 
     # === CHẾ ĐỘ DỌN RÁC ===
     if args.clean or args.clean_all:
@@ -98,6 +107,11 @@ def main():
     project_name = config["project_name"]
     target_w, target_h = parse_resolution(config["resolution"])
     fps = config.get("fps", 30)
+
+    # Validate FPS range
+    if not (1 <= fps <= 120):
+        print(f"[ERROR] FPS phải trong khoảng 1-120, nhận được: {fps}")
+        return
     scenes = config["scenes"]
     total_scenes = len(scenes)
 
@@ -138,8 +152,9 @@ def main():
                 print(f"  [SKIP] Scene {scene_id} - đã có sẵn")
                 continue
             else:
-                # File không tồn tại -> phải render dù không được chỉ định
-                print(f"  [WARN] Scene {scene_id} chưa có file, sẽ render bổ sung")
+                # File không tồn tại -> thêm vào danh sách render
+                scenes_to_render.add(scene_id)
+                print(f"  [WARN] Scene {scene_id} chưa có file, thêm vào danh sách render")
 
         print(f"\n--- SCENE {scene_id}/{total_scenes} ({scene['mode']}) ---")
 
@@ -186,6 +201,14 @@ def main():
         print(f"  [OK] Scene {scene_id} hoàn thành!")
 
     # ===== BƯỚC 2: Concat tất cả scene =====
+    # Validate tất cả scene đã render thành công
+    missing_scenes = [p for p in scene_paths if not os.path.exists(p)]
+    if missing_scenes:
+        print(f"\n[ERROR] Các scene sau bị thiếu, không thể concat:")
+        for p in missing_scenes:
+            print(f"  - {os.path.basename(p)}")
+        return
+
     print(f"\n--- CONCAT {len(scene_paths)} SCENE ---")
     concat_output = os.path.join(project_dir, "concat_raw.mp4")
     concat_all_scenes(scene_paths, concat_output, project_dir)
@@ -199,6 +222,7 @@ def main():
         bgm_path = os.path.join(project_dir, bgm_file) if not os.path.isabs(bgm_file) else bgm_file
         duck_bgm = audio_settings.get("duck_bgm", False)
         bgm_volume = audio_settings.get("bgm_volume", 0.15)
+        voice_volume = audio_settings.get("voice_volume", 1.0)
 
         print(f"\n--- ỐP NHẠC NỀN ---")
         apply_bgm(
@@ -206,7 +230,8 @@ def main():
             bgm_file=bgm_path,
             output_path=final_output,
             duck_bgm=duck_bgm,
-            bgm_volume=bgm_volume
+            bgm_volume=bgm_volume,
+            voice_volume=voice_volume
         )
     else:
         print("\n--- Không có BGM, xuất trực tiếp ---")

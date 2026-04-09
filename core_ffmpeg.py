@@ -11,9 +11,10 @@ Tuân thủ nguyên tắc "Chia để trị":
 """
 
 import os
+import platform
 from utils import (
     run_ffmpeg, parse_resolution, get_media_duration,
-    escape_text_for_ffmpeg
+    escape_text_for_ffmpeg, validate_file_in_project
 )
 
 
@@ -46,10 +47,17 @@ def render_image_sequence_scene(
     text = scene.get("text", "")
 
     # --- Bước 1: Tạo clip câm cho từng ảnh ---
+    if not visuals:
+        raise ValueError(f"Scene {scene_id}: danh sách visuals rỗng!")
+
     clip_paths = []
     for i, v in enumerate(visuals):
         img_file = v["file"]
-        img_path = os.path.join(base_dir, img_file) if not os.path.isabs(img_file) else img_file
+        img_path = validate_file_in_project(img_file, base_dir)
+        if not os.path.exists(img_path):
+            raise FileNotFoundError(
+                f"Scene {scene_id}: không tìm thấy ảnh: {img_path}"
+            )
         duration = v["duration"]
         clip_path = os.path.join(temp_dir, f"scene{scene_id}_clip{i}.mp4")
         clip_paths.append(clip_path)
@@ -123,8 +131,16 @@ def render_video_single_scene(
     scene_id = scene["scene_id"]
     text = scene.get("text", "")
 
+    if len(scene["visuals"]) > 1:
+        print(f"  [WARN] Scene {scene_id}: mode=video_single chỉ dùng visual đầu tiên, "
+              f"bỏ qua {len(scene['visuals']) - 1} visual còn lại")
+
     video_file = scene["visuals"][0]["file"]
-    video_path = os.path.join(base_dir, video_file) if not os.path.isabs(video_file) else video_file
+    video_path = validate_file_in_project(video_file, base_dir)
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(
+            f"Scene {scene_id}: không tìm thấy video: {video_path}"
+        )
 
     # Bước 1: Scale + pad video gốc, bỏ audio gốc
     scaled_path = os.path.join(temp_dir, f"scene{scene_id}_scaled.mp4")
@@ -179,6 +195,12 @@ def _overlay_audio_and_text(
     - TTS dài hơn -> bị cắt cụt bằng -t (thời lượng video nền).
     - -shortest: dừng encode khi stream ngắn nhất kết thúc (video nền).
     """
+    # Validate input files
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"Video file không tồn tại: {video_path}")
+    if not os.path.exists(tts_path):
+        raise FileNotFoundError(f"TTS file không tồn tại: {tts_path}")
+
     video_duration = get_media_duration(video_path)
 
     # Build bộ lọc drawtext
@@ -190,10 +212,15 @@ def _overlay_audio_and_text(
 
     # Xây dựng drawtext filter
     if font_path and os.path.exists(font_path):
-        font_opt = f"fontfile='{font_path}'"
+        # Escape đường dẫn font cho FFmpeg (backslash -> forward slash)
+        safe_font = font_path.replace("\\", "/").replace(":", "\\:")
+        font_opt = f"fontfile='{safe_font}'"
     else:
-        # Fallback: dùng font mặc định hệ thống
-        font_opt = "font='Arial'"
+        # Fallback: chọn font theo OS
+        if platform.system() == "Windows":
+            font_opt = "font='Arial'"
+        else:
+            font_opt = "font='DejaVu Sans'"
 
     drawtext_filter = (
         f"drawtext={font_opt}:"
@@ -234,6 +261,9 @@ def concat_all_scenes(scene_paths: list[str], output_path: str, temp_dir: str):
     Concat Demuxer là cách an toàn nhất vì không re-encode,
     miễn là tất cả scene có cùng codec, resolution, fps.
     """
+    if not scene_paths:
+        raise ValueError("Danh sách scene rỗng, không thể concat!")
+
     # Tạo file danh sách cho concat demuxer
     list_file = os.path.join(temp_dir, "concat_list.txt")
     with open(list_file, "w", encoding="utf-8") as f:

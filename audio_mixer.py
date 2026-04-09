@@ -7,6 +7,7 @@ Chức năng:
 - Ducking: dìm nhạc nền khi có giọng đọc TTS
 """
 
+import math
 import os
 from utils import run_ffmpeg, get_media_duration
 
@@ -29,21 +30,36 @@ def apply_bgm(
         bgm_volume: Âm lượng BGM (0.0 - 1.0), mặc định 0.15.
         voice_volume: Âm lượng giọng đọc TTS (0.0 - 1.0).
     """
+    # Validate input files
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"Video file không tồn tại: {video_path}")
+    if not os.path.exists(bgm_file):
+        raise FileNotFoundError(f"BGM file không tồn tại: {bgm_file}")
+
+    # Validate volume ranges
+    if not (0 < bgm_volume <= 1):
+        raise ValueError(f"bgm_volume phải trong khoảng (0, 1], nhận được: {bgm_volume}")
+    if not (0 < voice_volume <= 1):
+        raise ValueError(f"voice_volume phải trong khoảng (0, 1], nhận được: {voice_volume}")
+
     video_duration = get_media_duration(video_path)
     bgm_duration = get_media_duration(bgm_file)
 
-    print(f"  [BGM] Video: {video_duration:.1f}s | BGM: {bgm_duration:.1f}s")
+    # Tính số lần loop cần thiết thay vì loop vô hạn
+    loop_count = max(0, math.ceil(video_duration / bgm_duration) - 1)
+
+    print(f"  [BGM] Video: {video_duration:.1f}s | BGM: {bgm_duration:.1f}s | Loop: {loop_count}x")
     print(f"  [BGM] Ducking: {'ON' if duck_bgm else 'OFF'}")
 
     if duck_bgm:
         _apply_bgm_with_ducking(
             video_path, bgm_file, output_path,
-            video_duration, bgm_volume, voice_volume
+            video_duration, bgm_volume, voice_volume, loop_count
         )
     else:
         _apply_bgm_simple(
             video_path, bgm_file, output_path,
-            video_duration, bgm_volume
+            video_duration, bgm_volume, voice_volume, loop_count
         )
 
 
@@ -52,26 +68,28 @@ def _apply_bgm_simple(
     bgm_file: str,
     output_path: str,
     video_duration: float,
-    bgm_volume: float
+    bgm_volume: float,
+    voice_volume: float,
+    loop_count: int
 ):
     """Ốp BGM đơn giản (không ducking).
 
-    Dùng -stream_loop -1 để loop BGM vô hạn, rồi cắt bằng -t.
-    Audio filter: mix giọng đọc (volume giữ nguyên) + BGM (volume thấp).
+    Loop BGM đúng số lần cần thiết, rồi cắt bằng -t.
+    Audio filter: mix giọng đọc (volume theo config) + BGM (volume thấp).
     """
     # Filter: giảm volume BGM, trộn 2 track audio
     filter_complex = (
-        # Audio từ video (TTS) - giữ nguyên volume
+        # Audio từ video (TTS) - volume theo config
         f"[0:a]volume={voice_volume}[voice];"
         # BGM - giảm volume
         f"[1:a]volume={bgm_volume}[bgm];"
         # Trộn 2 audio track thành 1
-        f"[voice][bgm]amix=inputs=2:duration=first:dropout_transition=2[aout]"
+        f"[voice][bgm]amix=inputs=2:duration=first:dropout_transition=0[aout]"
     )
 
     run_ffmpeg([
         "-i", video_path,
-        "-stream_loop", "-1",       # Loop BGM vô hạn
+        "-stream_loop", str(loop_count),  # Loop BGM đúng số lần cần
         "-i", bgm_file,
         "-filter_complex", filter_complex,
         "-map", "0:v:0",            # Lấy video từ input 0
@@ -89,7 +107,8 @@ def _apply_bgm_with_ducking(
     output_path: str,
     video_duration: float,
     bgm_volume: float,
-    voice_volume: float
+    voice_volume: float,
+    loop_count: int
 ):
     """Ốp BGM có ducking - tự động dìm nhạc khi có giọng đọc.
 
@@ -98,10 +117,10 @@ def _apply_bgm_with_ducking(
     - Khi giọng đọc im, BGM trở lại volume bình thường.
 
     Tham số sidechaincompress:
-    - threshold=0.02: ngưỡng phát hiện giọng đọc (rất nhạy)
-    - ratio=8: tỉ lệ nén (giảm BGM mạnh khi có giọng)
-    - attack=200: thời gian bắt đầu dìm (200ms, mượt)
-    - release=1000: thời gian phục hồi (1s, không bị giật)
+    - threshold=0.03: ngưỡng phát hiện giọng đọc
+    - ratio=6: tỉ lệ nén (giảm BGM khi có giọng)
+    - attack=100: thời gian bắt đầu dìm (100ms, phản ứng nhanh)
+    - release=800: thời gian phục hồi (800ms, mượt)
     """
     filter_complex = (
         # Tách giọng đọc TTS
@@ -110,14 +129,14 @@ def _apply_bgm_with_ducking(
         f"[1:a]volume={bgm_volume}[bgm_raw];"
         # Áp dụng sidechain compress: dìm BGM khi voice phát
         f"[bgm_raw][voice_sc]sidechaincompress="
-        f"threshold=0.02:ratio=8:attack=200:release=1000[bgm_ducked];"
+        f"threshold=0.03:ratio=6:attack=100:release=800[bgm_ducked];"
         # Trộn voice + BGM đã ducked
-        f"[voice][bgm_ducked]amix=inputs=2:duration=first:dropout_transition=2[aout]"
+        f"[voice][bgm_ducked]amix=inputs=2:duration=first:dropout_transition=0[aout]"
     )
 
     run_ffmpeg([
         "-i", video_path,
-        "-stream_loop", "-1",
+        "-stream_loop", str(loop_count),  # Loop BGM đúng số lần cần
         "-i", bgm_file,
         "-filter_complex", filter_complex,
         "-map", "0:v:0",

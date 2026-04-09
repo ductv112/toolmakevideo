@@ -2,134 +2,378 @@
   HƯỚNG DẪN SỬ DỤNG - TOOL SẢN XUẤT VIDEO TỰ ĐỘNG
 ========================================================
 
-YÊU CẦU HỆ THỐNG:
-  - Python 3.10+
-  - FFmpeg đã cài và có trong PATH
-  - Cài thư viện: pip install -r requirements.txt
 
+1. YÊU CẦU HỆ THỐNG
 ========================================================
-QUY TRÌNH LÀM VIDEO MỚI
+
+  - Python 3.10 trở lên
+  - FFmpeg đã cài và có trong PATH
+    (Kiểm tra: mở terminal gõ "ffmpeg -version", nếu ra phiên bản là OK)
+  - Cài thư viện Python:
+      pip install -r requirements.txt
+  - Kết nối Internet (cần cho lần đầu tải giọng đọc TTS)
+
+  Định dạng file hỗ trợ:
+    - Ảnh : JPG, JPEG, PNG, BMP, WEBP
+    - Video: MP4, MKV, AVI, MOV, WEBM
+    - Nhạc : MP3, WAV, AAC, FLAC, OGG
+
+
+2. QUY TRÌNH LÀM VIDEO MỚI (5 BƯỚC)
 ========================================================
 
 BƯỚC 1: Tạo thư mục dự án
-  Tạo folder mới trong thư mục Video/, ví dụ:
-    Video/SonTinhThuyTinh/
-    Video/SuTichDuaHau/
-    Video/CongfuPanda/
+  Tạo folder mới trong thư mục Video/ (nằm cạnh main.py):
+
+    ToolMakeVideo/
+    ├── main.py
+    ├── ...
+    └── Video/
+        ├── SonTinhThuyTinh/    <-- dự án 1
+        ├── SuTichDuaHau/       <-- dự án 2
+        └── CongfuPanda/        <-- dự án 3
 
 BƯỚC 2: Chuẩn bị nguyên liệu
-  Bỏ tất cả vào thư mục dự án:
+  Bỏ TẤT CẢ ảnh, video, nhạc nền vào thư mục dự án:
+
     Video/SonTinhThuyTinh/
-    ├── anh_01.jpg
-    ├── anh_02.jpg
-    ├── video_01.mp4
+    ├── 1.png
+    ├── 2.png
+    ├── 3.png
+    ├── clip_chien_dau.mp4
     └── nhac_nen.mp3
 
 BƯỚC 3: Tạo file config.json
-  Copy file config.json mẫu (ở thư mục gốc tool) vào thư mục dự án.
-  Mở ra sửa nội dung cho phù hợp video mới.
+  Copy 1 trong 3 file config mẫu ở thư mục gốc tool vào thư mục dự án,
+  đổi tên thành config.json, rồi mở ra sửa nội dung:
 
-  Lưu ý:
-  - Đường dẫn file là tương đối trong cùng thư mục (vd: "anh_01.jpg", không cần "./assets/")
-  - project_name sẽ là tên file video đầu ra
-  - resolution: "1080x1920" (dọc 9:16) hoặc "1920x1080" (ngang 16:9)
-  - mode: "image_sequence" (ghép nhiều ảnh) hoặc "video_single" (1 video ngắn)
-  - Mỗi ảnh trong image_sequence cần có "duration" (số giây hiển thị)
+  File mẫu có sẵn:
+    - config_ghep_anh.json        -> dùng khi video toàn ảnh tĩnh
+    - config_ghep_video_doc.json  -> dùng khi video toàn clip, khung dọc
+    - config_ghep_video_ngang.json -> dùng khi video toàn clip, khung ngang
+
+  (Xem chi tiết cách cấu hình ở Mục 5 bên dưới)
 
 BƯỚC 4: Chạy tool
-  Mở terminal tại thư mục gốc tool (ToolMakeVideo/), chạy:
+  Mở terminal TẠI THƯ MỤC GỐC TOOL (chứa main.py), chạy:
 
     python main.py Video/SonTinhThuyTinh
 
+  Ngồi chờ tool chạy. Quá trình gồm:
+    1) Tải giọng đọc TTS cho từng scene (lần đầu)
+    2) Render từng scene (ảnh/video + giọng đọc + phụ đề)
+    3) Ghép tất cả scene lại
+    4) Ốp nhạc nền (nếu có)
+
 BƯỚC 5: Lấy kết quả
   Video hoàn chỉnh nằm ngay trong thư mục dự án:
+
+    Video/SonTinhThuyTinh/son_tinh_thuy_tinh.mp4
+                          ^^^^^^^^^^^^^^^^^^^^
+                          (tên lấy từ project_name trong config.json)
+
+
+3. CÁC LỆNH
+========================================================
+
+  LỆNH                                             | MÔ TẢ
+  --------------------------------------------------|------------------------------------
+  python main.py Video/XXX                          | Chạy toàn bộ (lần đầu)
+  python main.py Video/XXX --scene 3                | Render lại scene 3
+  python main.py Video/XXX --scene 3 5 7            | Render lại scene 3, 5, 7
+  python main.py Video/XXX -s 3 5                   | Viết tắt của --scene
+  python main.py Video/XXX --concat-only            | Chỉ ghép lại, không render
+  python main.py Video/XXX --font "đường/dẫn/font"  | Dùng font chữ tùy chọn
+  python main.py Video/XXX -f "đường/dẫn/font"      | Viết tắt của --font
+  python main.py Video/XXX --clean                  | Dọn file tạm, giữ TTS
+  python main.py Video/XXX --clean-all              | Dọn sạch, xóa cả TTS
+
+Chi tiết:
+
+  a) CHẠY LẠI SCENE CỤ THỂ (--scene / -s):
+     Chỉ render lại scene chỉ định, các scene khác giữ nguyên.
+     Tự động ghép lại video final mới.
+     Dùng khi 1-2 scene bị lỗi hoặc muốn sửa text.
+
+  b) CHỈ GHÉP LẠI (--concat-only):
+     Dùng khi đã có đủ file temp_scene_*.mp4, chỉ muốn ghép lại + ốp nhạc.
+     Ví dụ: muốn đổi nhạc nền mà không render lại scene.
+
+  c) FONT CHỮ (--font / -f):
+     Mặc định dùng Arial (Windows) hoặc DejaVu Sans (Linux/Mac).
+     Muốn dùng font khác, truyền đường dẫn file .ttf hoặc .otf.
+     Ví dụ Windows: --font "C:/Windows/Fonts/arial.ttf"
+
+  d) DỌN RÁC (--clean):
+     Xóa : temp_scene_*.mp4, scene*_clip*.mp4, concat_raw.mp4
+     Giữ : file gốc (ảnh, video, nhạc, config.json) + TTS + video final
+     Mục đích: giải phóng dung lượng, giữ TTS để lần sau đỡ tải lại.
+
+  e) DỌN SẠCH (--clean-all):
+     Xóa : tất cả file tạm + TTS (tts_scene*.mp3)
+     Giữ : file gốc + video final
+
+
+4. LƯU Ý QUAN TRỌNG
+========================================================
+
+  a) VỀ GIỌNG ĐỌC TTS:
+     - File TTS (tts_scene*.mp3) luôn được giữ lại giữa các lần chạy.
+       Nếu đã có TTS rồi, tool sẽ SKIP không tải lại -> tiết kiệm thời gian.
+     - Muốn tải lại TTS (ví dụ sửa text): XÓA file tts tương ứng rồi chạy lại.
+       Ví dụ: xóa tts_scene3.mp3 rồi chạy: python main.py Video/XXX --scene 3
+     - Giới hạn: mỗi đoạn text tối đa 5000 ký tự. Nếu dài hơn sẽ bị cắt tự động.
+
+  b) VỀ THỜI LƯỢNG:
+     - Thời lượng mỗi scene lấy theo HÌNH ẢNH / VIDEO GỐC, không phải TTS.
+     - TTS dài hơn hình  -> TTS bị cắt cụt (hình hết thì dừng).
+     - TTS ngắn hơn hình -> hình tiếp tục chạy trong im lặng.
+     - Đơn vị duration trong config.json là GIÂY (ví dụ: 2.5 = 2 giây rưỡi).
+
+  c) VỀ HIỆU SUẤT:
+     - Nếu chỉ lỗi 1-2 scene, dùng --scene thay vì chạy lại toàn bộ.
+     - Video càng nhiều scene, resolution càng cao -> thời gian render càng lâu.
+     - Tool không giới hạn thời gian xử lý, video dài bao nhiêu cũng chạy được.
+
+  d) VỀ PHỤĐỀ (DRAWTEXT):
+     - Phụ đề luôn hiển thị ở dưới cùng, căn giữa ngang.
+     - Style cố định: chữ trắng, viền vàng 3px.
+     - Kích thước chữ tự động tính theo chiều rộng video (~3.5% width).
+
+
+5. CHI TIẾT CẤU HÌNH CONFIG.JSON
+========================================================
+
+  Dưới đây là config mẫu đầy đủ với giải thích từng trường:
+
+  {
+    "project_name": "son_tinh_thuy_tinh",
+    "resolution": "1080x1920",
+    "fps": 30,
+    "audio_settings": {
+      "bgm_file": "nhac_nen.mp3",
+      "bgm_volume": 0.15,
+      "voice_volume": 1.0,
+      "duck_bgm": true
+    },
+    "scenes": [
+      {
+        "scene_id": 1,
+        "mode": "image_sequence",
+        "visuals": [
+          {"file": "1.png", "duration": 2.5},
+          {"file": "2.png", "duration": 3.0},
+          {"file": "3.png", "duration": 2.0}
+        ],
+        "text": "Ngày xửa ngày xưa, Vua Hùng có một người con gái...",
+        "tts_voice": "vi-VN-HoaiMyNeural"
+      },
+      {
+        "scene_id": 2,
+        "mode": "video_single",
+        "visuals": [
+          {"file": "clip_chien_dau.mp4"}
+        ],
+        "text": "Sơn Tinh và Thủy Tinh giao chiến dữ dội...",
+        "tts_voice": "vi-VN-NamMinhNeural"
+      }
+    ]
+  }
+
+  GIẢI THÍCH TỪNG TRƯỜNG:
+
+  Trường cấp cao:
+  -------------------------------------------------------
+  project_name  | Tên video đầu ra (không cần .mp4)
+                | VD: "son_tinh" -> xuất ra son_tinh.mp4
+  -------------------------------------------------------
+  resolution    | Khung hình đầu ra
+                | "1080x1920" = dọc 9:16 (YouTube Shorts, TikTok)
+                | "1920x1080" = ngang 16:9 (YouTube thường)
+  -------------------------------------------------------
+  fps           | Số khung hình/giây. Thường dùng 24 hoặc 30.
+                | Giá trị hợp lệ: 1 - 120
+  -------------------------------------------------------
+
+  audio_settings (tùy chọn, bỏ qua nếu không cần nhạc nền):
+  -------------------------------------------------------
+  bgm_file      | Tên file nhạc nền (nằm trong thư mục dự án)
+                | Để "" hoặc bỏ trường này nếu không cần nhạc
+  -------------------------------------------------------
+  bgm_volume    | Âm lượng nhạc nền, từ 0.01 đến 1.0
+                | Gợi ý: 0.10 - 0.20 (nghe nền nhẹ nhàng)
+  -------------------------------------------------------
+  voice_volume  | Âm lượng giọng đọc TTS, từ 0.01 đến 1.0
+                | Mặc định: 1.0 (giữ nguyên). Thường không cần sửa.
+  -------------------------------------------------------
+  duck_bgm      | true  = tự động dìm nhạc nền khi có giọng đọc
+                | false = giữ nguyên âm lượng nhạc nền xuyên suốt
+                | Gợi ý: dùng true cho video kể chuyện
+  -------------------------------------------------------
+
+  scenes (bắt buộc, danh sách các phân cảnh):
+  -------------------------------------------------------
+  scene_id      | Số thứ tự scene. BẮT BUỘC KHÔNG TRÙNG NHAU.
+                | VD: 1, 2, 3, ...
+  -------------------------------------------------------
+  mode          | Chế độ xử lý hình ảnh:
+                | "image_sequence" = ghép nhiều ảnh tĩnh
+                | "video_single"   = dùng 1 video clip
+  -------------------------------------------------------
+  visuals       | Danh sách file hình ảnh/video:
+                |
+                | Với image_sequence (nhiều ảnh):
+                |   [
+                |     {"file": "1.png", "duration": 2.5},
+                |     {"file": "2.png", "duration": 3.0}
+                |   ]
+                |   -> duration = số GIÂY hiển thị mỗi ảnh
+                |   -> Ảnh ngang/dọc/vuông đều được, tool tự scale + pad
+                |
+                | Với video_single (1 clip):
+                |   [
+                |     {"file": "clip1.mp4"}
+                |   ]
+                |   -> Không cần duration (lấy theo thời lượng video gốc)
+  -------------------------------------------------------
+  text          | Nội dung giọng đọc + phụ đề.
+                | Tối đa 5000 ký tự. KHÔNG được để rỗng.
+  -------------------------------------------------------
+  tts_voice     | Tên giọng đọc (xem danh sách bên dưới)
+  -------------------------------------------------------
+
+
+6. GIỌNG ĐỌC (EDGE-TTS)
+========================================================
+
+  Giọng tiếng Việt:
+    - vi-VN-HoaiMyNeural   (nữ, tự nhiên)
+    - vi-VN-NamMinhNeural   (nam, tự nhiên)
+
+  Giọng tiếng Anh (phổ biến):
+    - en-US-JennyNeural     (nữ Mỹ)
+    - en-US-GuyNeural       (nam Mỹ)
+    - en-GB-SoniaNeural     (nữ Anh)
+
+  Xem TOÀN BỘ danh sách giọng đọc:
+    python -c "import asyncio, edge_tts; asyncio.run(edge_tts.list_voices())"
+
+  Hoặc lọc theo ngôn ngữ (ví dụ tiếng Nhật):
+    python -c "
+    import asyncio, edge_tts
+    async def main():
+        voices = await edge_tts.list_voices()
+        for v in voices:
+            if 'ja-JP' in v['ShortName']:
+                print(v['ShortName'], v['Gender'])
+    asyncio.run(main())
+    "
+
+
+7. VÍ DỤ THỰC TẾ: LÀM VIDEO TỪ A-Z
+========================================================
+
+  Giả sử bạn muốn làm video "Sơn Tinh Thủy Tinh" dọc 9:16 với 3 scene:
+    - Scene 1: 5 ảnh tĩnh, mỗi ảnh 2 giây
+    - Scene 2: 1 clip chiến đấu
+    - Scene 3: 4 ảnh kết thúc
+
+  BƯỚC 1: Tạo thư mục
+    mkdir Video/SonTinhThuyTinh
+
+  BƯỚC 2: Bỏ nguyên liệu vào
+    Video/SonTinhThuyTinh/
+    ├── 1.png ... 5.png         (ảnh scene 1)
+    ├── clip_chien.mp4          (video scene 2)
+    ├── 6.png ... 9.png         (ảnh scene 3)
+    └── nhac_nen.mp3            (nhạc nền)
+
+  BƯỚC 3: Tạo config.json
+    {
+      "project_name": "son_tinh_thuy_tinh",
+      "resolution": "1080x1920",
+      "fps": 30,
+      "audio_settings": {
+        "bgm_file": "nhac_nen.mp3",
+        "bgm_volume": 0.15,
+        "duck_bgm": true
+      },
+      "scenes": [
+        {
+          "scene_id": 1,
+          "mode": "image_sequence",
+          "visuals": [
+            {"file": "1.png", "duration": 2},
+            {"file": "2.png", "duration": 2},
+            {"file": "3.png", "duration": 2},
+            {"file": "4.png", "duration": 2},
+            {"file": "5.png", "duration": 2}
+          ],
+          "text": "Ngày xưa, Vua Hùng thứ 18 có một người con gái tên là Mỵ Nương, nhan sắc tuyệt trần.",
+          "tts_voice": "vi-VN-HoaiMyNeural"
+        },
+        {
+          "scene_id": 2,
+          "mode": "video_single",
+          "visuals": [{"file": "clip_chien.mp4"}],
+          "text": "Sơn Tinh hô mưa gọi gió, dâng núi cao chặn đứng dòng nước lũ của Thủy Tinh.",
+          "tts_voice": "vi-VN-NamMinhNeural"
+        },
+        {
+          "scene_id": 3,
+          "mode": "image_sequence",
+          "visuals": [
+            {"file": "6.png", "duration": 2.5},
+            {"file": "7.png", "duration": 2.5},
+            {"file": "8.png", "duration": 2.5},
+            {"file": "9.png", "duration": 2.5}
+          ],
+          "text": "Cuối cùng Thủy Tinh thua trận, rút quân về biển. Từ đó năm nào cũng dâng nước đánh Sơn Tinh.",
+          "tts_voice": "vi-VN-HoaiMyNeural"
+        }
+      ]
+    }
+
+  BƯỚC 4: Chạy
+    python main.py Video/SonTinhThuyTinh
+
+  BƯỚC 5: Lấy kết quả
     Video/SonTinhThuyTinh/son_tinh_thuy_tinh.mp4
 
-========================================================
-CÁC LỆNH
-========================================================
+  Nếu scene 2 bị lỗi, chạy lại riêng scene 2:
+    python main.py Video/SonTinhThuyTinh --scene 2
 
-1. CHẠY TOÀN BỘ (lần đầu hoặc làm lại từ đầu):
-   python main.py Video/SonTinhThuyTinh
+  Xong xuôi, dọn rác:
+    python main.py Video/SonTinhThuyTinh --clean
 
-2. CHẠY LẠI 1 HOẶC VÀI SCENE BỊ LỖI:
-   python main.py Video/SonTinhThuyTinh --scene 3
-   python main.py Video/SonTinhThuyTinh --scene 3 5 7
 
-   -> Chỉ render lại scene chỉ định, các scene khác giữ nguyên.
-   -> Tự động ghép lại video final mới.
-
-3. CHỈ GHÉP LẠI VIDEO FINAL (không render lại scene nào):
-   python main.py Video/SonTinhThuyTinh --concat-only
-
-   -> Dùng khi đã có đủ temp_scene_*.mp4, chỉ muốn ghép lại + ốp nhạc.
-
-4. CHỈ ĐỊNH FONT CHỮ:
-   python main.py Video/SonTinhThuyTinh --font "C:/Windows/Fonts/arial.ttf"
-
-5. DỌN RÁC (giữ TTS để lần sau đỡ tải lại):
-   python main.py Video/SonTinhThuyTinh --clean
-
-   -> Xóa: temp_scene_*.mp4, concat_raw.mp4
-   -> Giữ: file gốc, TTS, video final
-
-6. DỌN SẠCH HOÀN TOÀN (xóa cả TTS):
-   python main.py Video/SonTinhThuyTinh --clean-all
-
-   -> Xóa: temp_scene_*.mp4, concat_raw.mp4, tts_scene*.mp3
-   -> Giữ: file gốc (ảnh, video, nhạc, config.json) + video final
-
-========================================================
-LƯU Ý QUAN TRỌNG
+8. XỬ LÝ LỖI THƯỜNG GẶP
 ========================================================
 
-- File TTS (tts_scene*.mp3) luôn được giữ lại giữa các lần chạy.
-  Nếu đã có TTS rồi thì tool sẽ SKIP, không tải lại -> tiết kiệm thời gian.
-  Muốn tải lại TTS: xóa file tts tương ứng rồi chạy lại.
-
-- Khi chạy lại toàn bộ (không có --scene), tool sẽ render lại TẤT CẢ scene.
-  Nếu chỉ lỗi 1-2 scene, nên dùng --scene để tiết kiệm thời gian.
-
-- Thời lượng mỗi scene lấy theo thời lượng HÌNH ẢNH, không phải TTS.
-  Nếu TTS dài hơn hình -> TTS bị cắt cụt.
-  Nếu TTS ngắn hơn hình -> hình tiếp tục chạy trong im lặng.
-
-========================================================
-CẤU TRÚC FILE CONFIG.JSON MẪU
-========================================================
-
-{
-  "project_name": "son_tinh_thuy_tinh",
-  "resolution": "1080x1920",
-  "fps": 30,
-  "audio_settings": {
-    "bgm_file": "nhac_nen.mp3",
-    "bgm_volume": 0.15,
-    "duck_bgm": true
-  },
-  "scenes": [
-    {
-      "scene_id": 1,
-      "mode": "image_sequence",
-      "visuals": [
-        {"file": "anh_01.jpg", "duration": 2.5},
-        {"file": "anh_02.jpg", "duration": 3.0}
-      ],
-      "text": "Nội dung giọng đọc và phụ đề...",
-      "tts_voice": "vi-VN-HoaiMyNeural"
-    },
-    {
-      "scene_id": 2,
-      "mode": "video_single",
-      "visuals": [
-        {"file": "video_01.mp4"}
-      ],
-      "text": "Nội dung giọng đọc...",
-      "tts_voice": "vi-VN-NamMinhNeural"
-    }
-  ]
-}
-
-GIỌNG ĐỌC TIẾNG VIỆT (edge-tts):
-  - vi-VN-HoaiMyNeural  (nữ)
-  - vi-VN-NamMinhNeural  (nam)
+  LỖI                                    | CÁCH XỬ LÝ
+  ----------------------------------------|-------------------------------------------
+  "FFmpeg không tìm thấy trong PATH"     | Cài FFmpeg và thêm vào PATH hệ thống.
+                                          | Windows: tải từ ffmpeg.org, giải nén,
+                                          | thêm thư mục bin/ vào biến môi trường PATH.
+  ----------------------------------------|-------------------------------------------
+  "Không tìm thấy file config"           | Kiểm tra file config.json có nằm đúng
+                                          | trong thư mục dự án không.
+  ----------------------------------------|-------------------------------------------
+  "File config JSON không hợp lệ"        | Mở config.json kiểm tra cú pháp JSON.
+                                          | Lỗi thường gặp: thiếu dấu phẩy, thừa
+                                          | dấu phẩy ở phần tử cuối, thiếu ngoặc.
+  ----------------------------------------|-------------------------------------------
+  "scene_id bị trùng"                    | Mỗi scene phải có scene_id khác nhau.
+  ----------------------------------------|-------------------------------------------
+  "không tìm thấy file visual"           | Kiểm tra tên file trong config có khớp
+                                          | với file thực tế không (phân biệt hoa/thường).
+  ----------------------------------------|-------------------------------------------
+  "TTS generation thất bại"              | Kiểm tra kết nối Internet.
+                                          | Kiểm tra tên giọng đọc có đúng không.
+  ----------------------------------------|-------------------------------------------
+  "Resolution không đúng format"          | Phải đúng dạng WIDTHxHEIGHT, ví dụ:
+                                          | "1080x1920" hoặc "1920x1080"
+  ----------------------------------------|-------------------------------------------
+  Scene bị lỗi giữa chừng                | Chạy lại scene đó: --scene <số>
+                                          | Không cần chạy lại toàn bộ.
+  ----------------------------------------|-------------------------------------------

@@ -5,6 +5,7 @@
   "audio_settings": {
     "bgm_file": "nhacnen.mp3",
     "bgm_volume": 0.15,
+    "voice_volume": 1.0,
     "duck_bgm": true
   },
   "scenes": [
@@ -18,7 +19,7 @@
         {"file": "4.png", "duration": 2},
         {"file": "5.png", "duration": 2}
       ],
-      "text": "Nội dung giọng đọc scene 1...",
+      "text": "Noi dung giong doc scene 1. Thay bang noi dung thuc te cua ban.",
       "tts_voice": "vi-VN-HoaiMyNeural"
     },
     {
@@ -31,7 +32,7 @@
         {"file": "9.png", "duration": 2},
         {"file": "10.png", "duration": 2}
       ],
-      "text": "Nội dung giọng đọc scene 2...",
+      "text": "Noi dung giong doc scene 2. Thay bang noi dung thuc te cua ban.",
       "tts_voice": "vi-VN-HoaiMyNeural"
     },
     {
@@ -44,46 +45,7 @@
         {"file": "14.png", "duration": 2},
         {"file": "15.png", "duration": 2}
       ],
-      "text": "Nội dung giọng đọc scene 3...",
-      "tts_voice": "vi-VN-HoaiMyNeural"
-    },
-    {
-      "scene_id": 4,
-      "mode": "image_sequence",
-      "visuals": [
-        {"file": "16.png", "duration": 2},
-        {"file": "17.png", "duration": 2},
-        {"file": "18.png", "duration": 2},
-        {"file": "19.png", "duration": 2},
-        {"file": "20.png", "duration": 2}
-      ],
-      "text": "Nội dung giọng đọc scene 4...",
-      "tts_voice": "vi-VN-HoaiMyNeural"
-    },
-    {
-      "scene_id": 5,
-      "mode": "image_sequence",
-      "visuals": [
-        {"file": "21.png", "duration": 2},
-        {"file": "22.png", "duration": 2},
-        {"file": "23.png", "duration": 2},
-        {"file": "24.png", "duration": 2},
-        {"file": "25.png", "duration": 2}
-      ],
-      "text": "Nội dung giọng đọc scene 5...",
-      "tts_voice": "vi-VN-HoaiMyNeural"
-    },
-    {
-      "scene_id": 6,
-      "mode": "image_sequence",
-      "visuals": [
-        {"file": "26.png", "duration": 2},
-        {"file": "27.png", "duration": 2},
-        {"file": "28.png", "duration": 2},
-        {"file": "29.png", "duration": 2},
-        {"file": "30.png", "duration": 2}
-      ],
-      "text": "Nội dung giọng đọc scene 6...",
+      "text": "Noi dung giong doc scene 3. Thay bang noi dung thuc te cua ban.",
       "tts_voice": "vi-VN-HoaiMyNeural"
     }
   ]
