@@ -41,6 +41,29 @@ BƯỚC 2: Chuẩn bị nguyên liệu
     └── nhac_nen.mp3
 
 BƯỚC 3: Tạo file config.json
+
+  CÁCH 1 - TỰ ĐỘNG (khuyên dùng cho video ngang, nhiều scene):
+  Nếu đã có file kịch bản (format giống kichban.txt mẫu), chạy:
+
+    python gen_config.py D:\path\Video\Planet404\kichban.txt
+
+  Tool sẽ tự parse kịch bản và sinh config.json trong cùng thư mục.
+  Các tùy chọn:
+    --name ten_video              Tên project (mặc định: lấy tên thư mục)
+    --voice vi-VN-NamMinhNeural   Đổi giọng nam (mặc định: giọng nữ HoaiMyNeural)
+    --bgm nhacnen.mp3             Tên file nhạc nền (mặc định: nhacnen.mp3)
+    --bgm-volume 0.5              Âm lượng nhạc nền (mặc định: 0.5)
+    --clip-prefix clip            Prefix file video (mặc định: clip -> clip1.mp4...)
+    --no-watermark                Không chèn watermark
+    --no-duck                     Tắt ducking
+
+  Format kịch bản (mỗi cảnh cần có Text: và TTS:):
+    Cảnh 1: Tiêu đề cảnh
+    Prompt video: ... (bỏ qua, không dùng)
+    Text: Nội dung phụ đề hiển thị trên màn hình
+    TTS: Nội dung giọng đọc
+
+  CÁCH 2 - THỦ CÔNG (dùng cho video ít scene, ghép ảnh):
   Copy 1 trong 3 file config mẫu ở thư mục gốc tool vào thư mục dự án,
   đổi tên thành config.json, rồi mở ra sửa nội dung:
 
